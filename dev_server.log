@@ -6,13 +6,56 @@
   - Local:        http://localhost:3000
 
  ✓ Starting...
- ✓ Ready in 1938ms
- ○ Compiling / ...
- ✓ Compiled / in 4.1s (455 modules)
- GET / 200 in 4447ms
+ ✓ Ready in 2.2s
+ ○ Compiling /demo-comments ...
+ ⨯ ./app/demo-comments/page.tsx:4:1
+Module not found: Can't resolve './components/comments-engine'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m [33mReact[39m [36mfrom[39m [32m'react'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33mCommentsEngine[39m[33m,[39m { [33mCommentAdapter[39m[33m,[39m [33mComment[39m } [36mfrom[39m [32m'./components/comments-engine'[39m[33m;[39m[0m
+[0m [90m   |[39m [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m[0m
+[0m [90m 6 |[39m [36mconst[39m mockComments[33m:[39m [33mComment[39m[] [33m=[39m [[0m
+[0m [90m 7 |[39m   {[0m
 
-warn - The `content` option in your Tailwind CSS configuration is missing or empty.
-warn - Configure your content sources or your generated CSS will be missing styles.
-warn - https://tailwindcss.com/docs/content-configuration
- ✓ Compiled in 371ms (234 modules)
- ✓ Compiled in 247ms (234 modules)
+https://nextjs.org/docs/messages/module-not-found
+ ⨯ ./app/demo-comments/page.tsx:4:1
+Module not found: Can't resolve './components/comments-engine'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m [33mReact[39m [36mfrom[39m [32m'react'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33mCommentsEngine[39m[33m,[39m { [33mCommentAdapter[39m[33m,[39m [33mComment[39m } [36mfrom[39m [32m'./components/comments-engine'[39m[33m;[39m[0m
+[0m [90m   |[39m [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m[0m
+[0m [90m 6 |[39m [36mconst[39m mockComments[33m:[39m [33mComment[39m[] [33m=[39m [[0m
+[0m [90m 7 |[39m   {[0m
+
+https://nextjs.org/docs/messages/module-not-found
+ ⨯ ./app/demo-comments/page.tsx:4:1
+Module not found: Can't resolve './components/comments-engine'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m [33mReact[39m [36mfrom[39m [32m'react'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33mCommentsEngine[39m[33m,[39m { [33mCommentAdapter[39m[33m,[39m [33mComment[39m } [36mfrom[39m [32m'./components/comments-engine'[39m[33m;[39m[0m
+[0m [90m   |[39m [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m[0m
+[0m [90m 6 |[39m [36mconst[39m mockComments[33m:[39m [33mComment[39m[] [33m=[39m [[0m
+[0m [90m 7 |[39m   {[0m
+
+https://nextjs.org/docs/messages/module-not-found
+ GET /demo-comments 500 in 13662ms
+ ✓ Compiled /_error in 9.8s (2843 modules)
+ ⨯ ../src/QueryClientProvider.tsx (18:11) @ useQueryClient
+ ⨯ Error: No QueryClient set, use QueryClientProvider to set one
+    at CommentList (./components/comments-engine/ui/CommentList.tsx:30:94)
+digest: "3931693576"
+[0m [90m 16 |[39m[0m
+[0m [90m 17 |[39m   [36mif[39m ([33m![39mclient) {[0m
+[0m[31m[1m>[22m[39m[90m 18 |[39m     [36mthrow[39m [36mnew[39m [33mError[39m([32m'No QueryClient set, use QueryClientProvider to set one'[39m)[0m
+[0m [90m    |[39m           [31m[1m^[22m[39m[0m
+[0m [90m 19 |[39m   }[0m
+[0m [90m 20 |[39m[0m
+[0m [90m 21 |[39m   [36mreturn[39m client[0m
+ GET /demo-comments 500 in 810ms
+ ✓ Compiled in 751ms (2840 modules)
+ GET /demo-comments 200 in 225ms
+ ✓ Compiled /_not-found in 310ms (2827 modules)
+ ✓ Compiled in 471ms (665 modules)
