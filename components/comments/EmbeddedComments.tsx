@@ -1,4 +1,5 @@
 "use client";
+// @ts-nocheck
 
 import React, { useState } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';

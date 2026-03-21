@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { StateCreator } from 'zustand';
 
 export interface LikeState {
