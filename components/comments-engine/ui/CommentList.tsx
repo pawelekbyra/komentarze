@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { useCommentsContext, useTranslation } from '../context/CommentsContext';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
@@ -10,81 +9,33 @@ import ErrorState from './ErrorState';
 import CommentSkeleton from './CommentSkeleton';
 import { Loader2 } from 'lucide-react';
 import { Comment } from '../shared/validators';
-import { cn } from '@/lib/utils';
 
-interface CommentListProps {
-  sortBy?: 'newest' | 'top';
-}
+const CommentList: React.FC = () => {
+  const {
+    comments,
+    fetchNextComments,
+    hasNextComments,
+    isCommentsLoading,
+    isFetchingNextComments,
+    commentsError,
+    refetchComments,
+    postComment,
+    updateComment,
+    likeComment,
+    deleteComment,
+    reportComment,
+    isPosting,
+  } = useCommentsContext();
 
-const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
-  const { adapter, slideId, userProfile, addToast } = useCommentsContext();
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isLoading,
-    isFetchingNextPage,
-    error,
-    refetch,
-  } = useInfiniteQuery<
-    { comments: Comment[]; nextCursor: string | null },
-    Error,
-    InfiniteData<{ comments: Comment[]; nextCursor: string | null }>,
-    (string | undefined)[],
-    string | undefined
-  >({
-    queryKey: ['comments', slideId, sortBy],
-    queryFn: ({ pageParam }) => adapter.fetchComments({ slideId, pageParam, sortBy }),
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    enabled: !!slideId,
-  });
+  const handlePost = useCallback(async (text: string, file: File | null) => {
+    await postComment({ text, parentId: replyingTo?.id || null, imageFile: file });
+    setReplyingTo(null);
+  }, [postComment, replyingTo]);
 
-  const comments = data?.pages.flatMap((page) => page.comments) ?? [];
-
-  const postMutation = useMutation({
-    mutationFn: (params: { text: string; parentId: string | null; imageFile: File | null }) =>
-      adapter.submitComment({ slideId, ...params }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-      setReplyingTo(null);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (params: { commentId: string; text: string }) =>
-      adapter.updateComment(params),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
-
-  const likeMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.likeComment(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.deleteComment(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
-
-  const reportMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.reportComment(commentId),
-    onSuccess: () => {
-      addToast?.(t('reportSubmitted'), 'success');
-    },
-  });
-
-  if (isLoading) {
+  if (isCommentsLoading) {
     return (
       <div className="space-y-10">
         <CommentSkeleton count={5} />
@@ -92,8 +43,8 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
     );
   }
 
-  if (error) {
-    return <ErrorState reset={refetch} error={error} />;
+  if (commentsError) {
+    return <ErrorState reset={refetchComments} error={commentsError} />;
   }
 
   return (
@@ -102,8 +53,8 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
         parentId={replyingTo?.id}
         replyingToUser={replyingTo?.author.displayName || replyingTo?.author.username}
         onCancelReply={() => setReplyingTo(null)}
-        onSubmit={async (text, file) => { await postMutation.mutateAsync({ text, parentId: replyingTo?.id || null, imageFile: file }); }}
-        isSubmitting={postMutation.isPending}
+        onSubmit={handlePost}
+        isSubmitting={isPosting}
       />
 
       {comments.length === 0 ? (
@@ -114,10 +65,10 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
             <CommentItem
               key={comment.id}
               comment={comment}
-              onLike={likeMutation.mutate}
-              onDelete={deleteMutation.mutate}
-              onReport={reportMutation.mutate}
-              onUpdate={async (id, text) => { await updateMutation.mutateAsync({ commentId: id, text }); }}
+              onLike={likeComment}
+              onDelete={deleteComment}
+              onReport={reportComment}
+              onUpdate={async (id, text) => { await updateComment({ commentId: id, text }); }}
               onStartReply={setReplyingTo}
               renderReplies={(parentId) => (
                 <RepliesList parentId={parentId} />
@@ -125,14 +76,14 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
             />
           ))}
 
-          {hasNextPage && (
+          {hasNextComments && (
             <div className="flex justify-center pt-6">
                <button
-                 onClick={() => fetchNextPage()}
-                 disabled={isFetchingNextPage}
+                 onClick={() => fetchNextComments()}
+                 disabled={isFetchingNextComments}
                  className="px-6 py-2 bg-muted hover:bg-muted/80 rounded-full text-sm font-bold text-muted-foreground transition-all flex items-center justify-center gap-2"
                >
-                 {isFetchingNextPage ? <Loader2 className="animate-spin" size={16} /> : t('loadMore')}
+                 {isFetchingNextComments ? <Loader2 className="animate-spin" size={16} /> : t('loadMore')}
                </button>
             </div>
           )}
@@ -142,10 +93,18 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
   );
 };
 
-// Internal sub-component for replies to keep things clean
+// Internal sub-component for replies
 const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
-  const { adapter, slideId } = useCommentsContext();
-  const queryClient = useQueryClient();
+  const {
+    getRepliesQuery,
+    postComment,
+    updateComment,
+    likeComment,
+    deleteComment,
+    reportComment,
+  } = useCommentsContext();
+
+  const { t } = useTranslation();
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
 
   const {
@@ -154,63 +113,30 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
     hasNextPage,
     isLoading,
     isFetchingNextPage,
-  } = useInfiniteQuery<
-    { replies: Comment[]; nextCursor: string | null },
-    Error,
-    InfiniteData<{ replies: Comment[]; nextCursor: string | null }>,
-    (string | undefined)[],
-    string | undefined
-  >({
-    queryKey: ['comments', slideId, 'replies', parentId],
-    queryFn: ({ pageParam }) => adapter.fetchReplies({ parentId, cursor: pageParam }),
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-  });
+  } = getRepliesQuery(parentId);
 
   const replies = data?.pages.flatMap((page) => page.replies) ?? [];
 
-  const postMutation = useMutation({
-    mutationFn: (params: { text: string; imageFile: File | null }) =>
-      adapter.submitComment({ slideId, parentId, ...params }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-      setReplyingTo(null);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (params: { commentId: string; text: string }) =>
-      adapter.updateComment(params),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
-
-  const likeMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.likeComment(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.deleteComment(commentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-    },
-  });
+  const handlePostReply = useCallback(async (text: string, file: File | null) => {
+    await postComment({ text, parentId, imageFile: file });
+    setReplyingTo(null);
+  }, [postComment, parentId]);
 
   return (
     <div className="space-y-1 mt-1">
+      {isLoading && replies.length === 0 && (
+         <div className="pl-8 py-4"><Loader2 className="animate-spin text-muted-foreground" size={16} /></div>
+      )}
+
       {replies.map((reply: Comment) => (
         <CommentItem
           key={reply.id}
           comment={reply}
           level={1}
-          onLike={likeMutation.mutate}
-          onDelete={deleteMutation.mutate}
-          onReport={() => {}} // Pass from parent context
-          onUpdate={async (id, text) => { await updateMutation.mutateAsync({ commentId: id, text }); }}
+          onLike={likeComment}
+          onDelete={deleteComment}
+          onReport={reportComment}
+          onUpdate={async (id, text) => { await updateComment({ commentId: id, text }); }}
           onStartReply={setReplyingTo}
         />
       ))}
@@ -220,8 +146,8 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
            <CommentInput
              replyingToUser={replyingTo.author.displayName || replyingTo.author.username}
              onCancelReply={() => setReplyingTo(null)}
-             onSubmit={async (text, file) => { await postMutation.mutateAsync({ text, imageFile: file }); }}
-             isSubmitting={postMutation.isPending}
+             onSubmit={handlePostReply}
+             isSubmitting={false} // Would need a way to track specific reply submission state if needed
            />
          </div>
       )}

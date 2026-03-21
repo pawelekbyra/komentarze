@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useMemo, useCallback } from 'react';
 import { pl } from 'date-fns/locale';
 import { CommentAdapter, UserProfile, CommentsTranslations, CommentsTheme } from '../shared/types';
+import { useCommentsManager } from '../hooks/useCommentsManager';
 
-interface CommentsContextType {
-  adapter: CommentAdapter;
+type CommentsContextType = {
   userProfile: UserProfile | null;
   translations: CommentsTranslations;
   theme: CommentsTheme;
@@ -13,7 +13,7 @@ interface CommentsContextType {
   onAuthRequired?: () => void;
   onAvatarClick?: (userId: string) => void;
   addToast?: (message: string, type: 'success' | 'error' | 'info' | 'locked') => void;
-}
+} & ReturnType<typeof useCommentsManager>;
 
 const defaultTranslations: CommentsTranslations = {
   commentsTitle: 'Komentarze ({{count}})',
@@ -50,6 +50,7 @@ export const CommentsProvider: React.FC<{
   children: React.ReactNode;
   adapter: CommentAdapter;
   slideId: string;
+  sortBy?: 'newest' | 'top';
   userProfile?: UserProfile | null;
   translations?: Partial<CommentsTranslations>;
   theme?: Partial<CommentsTheme>;
@@ -60,6 +61,7 @@ export const CommentsProvider: React.FC<{
   children,
   adapter,
   slideId,
+  sortBy = 'top',
   userProfile = null,
   translations = {},
   theme = {},
@@ -78,8 +80,10 @@ export const CommentsProvider: React.FC<{
   const onAvatarClick = useCallback((userId: string) => propsOnAvatarClick?.(userId), [propsOnAvatarClick]);
   const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'locked') => propsAddToast?.(message, type), [propsAddToast]);
 
+  const commentsManager = useCommentsManager(adapter, slideId, sortBy);
+
   const value: CommentsContextType = {
-    adapter,
+    ...commentsManager,
     slideId,
     userProfile,
     translations: mergedTranslations,

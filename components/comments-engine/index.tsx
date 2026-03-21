@@ -32,6 +32,7 @@ const CommentsEngine: React.FC<CommentsEngineProps> = ({
     <CommentsProvider
       adapter={adapter}
       slideId={slideId}
+      sortBy={sortBy}
       userProfile={userProfile}
       translations={translations}
       theme={theme}
@@ -39,7 +40,7 @@ const CommentsEngine: React.FC<CommentsEngineProps> = ({
       onAvatarClick={onAvatarClick}
       addToast={addToast}
     >
-      <CommentList sortBy={sortBy} />
+      <CommentList />
     </CommentsProvider>
   );
 };
