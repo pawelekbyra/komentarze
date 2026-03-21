@@ -29,6 +29,11 @@ export interface CommentAdapter {
     imageFile: File | null;
   }) => Promise<Comment>;
 
+  updateComment: (params: {
+    commentId: string;
+    text: string;
+  }) => Promise<Comment>;
+
   likeComment: (commentId: string) => Promise<{ isLiked: boolean; likesCount: number }>;
 
   deleteComment: (commentId: string) => Promise<void>;
@@ -65,13 +70,7 @@ import { Locale } from 'date-fns';
 
 export interface CommentsTheme {
   locale?: Locale;
-  fontSerif?: string;
-  colors?: {
-    text?: string;
-    background?: string;
-    primary?: string;
-    muted?: string;
-  };
+  maxDepth?: number;
   classes?: {
     root?: string;
     comment?: string;

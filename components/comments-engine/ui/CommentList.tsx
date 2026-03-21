@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { useCommentsContext, useTranslation } from '../context/CommentsContext';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
+import CommentSkeleton from './CommentSkeleton';
 import { Loader2 } from 'lucide-react';
 import { Comment } from '../shared/validators';
 import { cn } from '@/lib/utils';
@@ -48,10 +49,17 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
   const postMutation = useMutation({
     mutationFn: (params: { text: string; parentId: string | null; imageFile: File | null }) =>
       adapter.submitComment({ slideId, ...params }),
-    onSuccess: (newComment) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
       setReplyingTo(null);
-      addToast?.('Dodano!', 'success');
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (params: { commentId: string; text: string }) =>
+      adapter.updateComment(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
     },
   });
 
@@ -66,7 +74,6 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
     mutationFn: (commentId: string) => adapter.deleteComment(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
-      addToast?.('Usunięto', 'info');
     },
   });
 
@@ -79,26 +86,14 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin text-primary" size={40} />
+      <div className="space-y-10">
+        <CommentSkeleton count={5} />
       </div>
     );
   }
 
   if (error) {
-    return <ErrorState reset={refetch} />;
-  }
-
-  if (comments.length === 0) {
-    return (
-      <div className="space-y-8">
-        <CommentInput
-          onSubmit={async (text, file) => { await postMutation.mutateAsync({ text, parentId: null, imageFile: file }); }}
-          isSubmitting={postMutation.isPending}
-        />
-        <EmptyState />
-      </div>
-    );
+    return <ErrorState reset={refetch} error={error} />;
   }
 
   return (
@@ -111,31 +106,38 @@ const CommentList: React.FC<CommentListProps> = ({ sortBy = 'top' }) => {
         isSubmitting={postMutation.isPending}
       />
 
-      <div className="space-y-2">
-        {comments.map((comment: Comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            onLike={likeMutation.mutate}
-            onDelete={deleteMutation.mutate}
-            onReport={reportMutation.mutate}
-            onStartReply={setReplyingTo}
-            renderReplies={(parentId) => (
-               <RepliesList parentId={parentId} />
-            )}
-          />
-        ))}
+      {comments.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="divide-y divide-border">
+          {comments.map((comment: Comment) => (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              onLike={likeMutation.mutate}
+              onDelete={deleteMutation.mutate}
+              onReport={reportMutation.mutate}
+              onUpdate={async (id, text) => { await updateMutation.mutateAsync({ commentId: id, text }); }}
+              onStartReply={setReplyingTo}
+              renderReplies={(parentId) => (
+                <RepliesList parentId={parentId} />
+              )}
+            />
+          ))}
 
-        {hasNextPage && (
-          <button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="w-full py-4 text-primary font-bold hover:underline transition-all flex items-center justify-center gap-2"
-          >
-            {isFetchingNextPage ? <Loader2 className="animate-spin" size={16} /> : t('loadMore')}
-          </button>
-        )}
-      </div>
+          {hasNextPage && (
+            <div className="flex justify-center pt-6">
+               <button
+                 onClick={() => fetchNextPage()}
+                 disabled={isFetchingNextPage}
+                 className="px-6 py-2 bg-muted hover:bg-muted/80 rounded-full text-sm font-bold text-muted-foreground transition-all flex items-center justify-center gap-2"
+               >
+                 {isFetchingNextPage ? <Loader2 className="animate-spin" size={16} /> : t('loadMore')}
+               </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -176,6 +178,14 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (params: { commentId: string; text: string }) =>
+      adapter.updateComment(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', slideId] });
+    },
+  });
+
   const likeMutation = useMutation({
     mutationFn: (commentId: string) => adapter.likeComment(commentId),
     onSuccess: () => {
@@ -190,15 +200,8 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
     },
   });
 
-  const reportMutation = useMutation({
-    mutationFn: (commentId: string) => adapter.reportComment(commentId),
-    onSuccess: () => {
-      // toast is handled in parent context usually
-    },
-  });
-
   return (
-    <div className="space-y-2 mt-2">
+    <div className="space-y-1 mt-1">
       {replies.map((reply: Comment) => (
         <CommentItem
           key={reply.id}
@@ -206,13 +209,14 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
           level={1}
           onLike={likeMutation.mutate}
           onDelete={deleteMutation.mutate}
-          onReport={reportMutation.mutate}
+          onReport={() => {}} // Pass from parent context
+          onUpdate={async (id, text) => { await updateMutation.mutateAsync({ commentId: id, text }); }}
           onStartReply={setReplyingTo}
         />
       ))}
 
       {replyingTo && (
-         <div className="pl-8 mt-2">
+         <div className="pl-8 py-2">
            <CommentInput
              replyingToUser={replyingTo.author.displayName || replyingTo.author.username}
              onCancelReply={() => setReplyingTo(null)}
@@ -226,7 +230,7 @@ const RepliesList: React.FC<{ parentId: string }> = ({ parentId }) => {
         <button
           onClick={() => fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="text-xs text-primary font-bold pl-8 py-2"
+          className="text-xs text-primary font-bold pl-8 py-3 hover:underline"
         >
           {isFetchingNextPage ? '...' : 'Pokaż więcej odpowiedzi'}
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useCallback } from 'react';
 import { pl } from 'date-fns/locale';
 import { CommentAdapter, UserProfile, CommentsTranslations, CommentsTheme } from '../shared/types';
 
@@ -41,13 +41,7 @@ const defaultTranslations: CommentsTranslations = {
 
 const defaultTheme: CommentsTheme = {
   locale: pl,
-  fontSerif: 'font-serif',
-  colors: {
-    text: '#1a1a1a',
-    background: '#FDFBF7',
-    primary: '#7c3aed',
-    muted: '#A6A6A6',
-  },
+  maxDepth: 5,
 };
 
 const CommentsContext = createContext<CommentsContextType | null>(null);
@@ -69,17 +63,20 @@ export const CommentsProvider: React.FC<{
   userProfile = null,
   translations = {},
   theme = {},
-  onAuthRequired,
-  onAvatarClick,
-  addToast,
+  onAuthRequired: propsOnAuthRequired,
+  onAvatarClick: propsOnAvatarClick,
+  addToast: propsAddToast,
 }) => {
   const mergedTranslations = useMemo<CommentsTranslations>(() => ({ ...defaultTranslations, ...translations }), [translations]);
   const mergedTheme = useMemo<CommentsTheme>(() => ({
     ...defaultTheme,
     ...theme,
-    colors: { ...defaultTheme.colors, ...theme.colors },
     classes: { ...defaultTheme.classes, ...theme.classes },
   }), [theme]);
+
+  const onAuthRequired = useCallback(() => propsOnAuthRequired?.(), [propsOnAuthRequired]);
+  const onAvatarClick = useCallback((userId: string) => propsOnAvatarClick?.(userId), [propsOnAvatarClick]);
+  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'locked') => propsAddToast?.(message, type), [propsAddToast]);
 
   const value: CommentsContextType = {
     adapter,
