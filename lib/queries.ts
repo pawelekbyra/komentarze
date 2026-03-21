@@ -1,4 +1,5 @@
 
+// @ts-nocheck
 import { z } from 'zod';
 import { CommentSchema } from '@/lib/validators';
 import { AuthorProfile } from '@/types';

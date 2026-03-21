@@ -6,51 +6,13 @@
   - Local:        http://localhost:3000
 
  ✓ Starting...
- ✓ Ready in 1727ms
- ○ Compiling /test-comments ...
- ✓ Compiled /test-comments in 14.4s (2631 modules)
- GET /test-comments 200 in 15188ms
- ○ Compiling /_not-found ...
- ✓ Compiled /api/comments in 8.4s (2672 modules)
- ✓ Compiled in 331ms (257 modules)
- ✓ Compiled /test-comments in 257ms (1304 modules)
- GET /test-comments 200 in 643ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 581ms (2620 modules)
- GET /avatars/default.png 404 in 690ms
- ✓ Compiled /api/comments in 251ms (1343 modules)
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 420ms
- GET /api/comments?slideId=test-slide-2&limit=20&sortBy=top 200 in 85ms
- GET /avatars/default.png 404 in 84ms
- ✓ Compiled in 320ms (1343 modules)
- ✓ Compiled in 993ms (2658 modules)
- GET /api/comments?slideId=test-slide-1 200 in 52ms
- GET /test-comments 200 in 285ms
- GET /avatars/default.png 404 in 46ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 18ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 15ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 10ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 25ms
- GET /test-comments 200 in 37ms
- GET /avatars/default.png 404 in 33ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 14ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 11ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 9ms
- GET /test-comments 200 in 44ms
- GET /avatars/default.png 404 in 34ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 16ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 11ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 12ms
- GET /test-comments 200 in 38ms
- GET /avatars/default.png 404 in 37ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 14ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 9ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 12ms
- GET /api/comments?slideId=test-slide-1&limit=20&sortBy=top 200 in 13ms
- ✓ Compiled in 772ms (492 modules)
- ✓ Compiled in 348ms (233 modules)
- ✓ Compiled in 133ms (233 modules)
- ✓ Compiled in 138ms (233 modules)
- ✓ Compiled in 147ms (233 modules)
- ✓ Compiled in 126ms (233 modules)
- ✓ Compiled in 710ms (233 modules)
+ ✓ Ready in 1938ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.1s (455 modules)
+ GET / 200 in 4447ms
+
+warn - The `content` option in your Tailwind CSS configuration is missing or empty.
+warn - Configure your content sources or your generated CSS will be missing styles.
+warn - https://tailwindcss.com/docs/content-configuration
+ ✓ Compiled in 371ms (234 modules)
+ ✓ Compiled in 247ms (234 modules)
