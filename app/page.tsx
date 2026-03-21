@@ -16,7 +16,7 @@ const LandingPage = () => {
         <section className="landing-testimonials">
           <h2>What Our Clients Say</h2>
           <blockquote>
-            <p>"This service changed my life!" - Happy Customer</p>
+            <p>&quot;This service changed my life!&quot; - Happy Customer</p>
           </blockquote>
         </section>
       </main>
