@@ -1,11 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useCallback } from 'react';
 import { pl } from 'date-fns/locale';
 import { CommentAdapter, UserProfile, CommentsTranslations, CommentsTheme } from '../shared/types';
+import { useCommentsManager } from '../hooks/useCommentsManager';
 
-interface CommentsContextType {
-  adapter: CommentAdapter;
+type CommentsContextType = {
   userProfile: UserProfile | null;
   translations: CommentsTranslations;
   theme: CommentsTheme;
@@ -13,7 +13,7 @@ interface CommentsContextType {
   onAuthRequired?: () => void;
   onAvatarClick?: (userId: string) => void;
   addToast?: (message: string, type: 'success' | 'error' | 'info' | 'locked') => void;
-}
+} & ReturnType<typeof useCommentsManager>;
 
 const defaultTranslations: CommentsTranslations = {
   commentsTitle: 'Komentarze ({{count}})',
@@ -41,13 +41,7 @@ const defaultTranslations: CommentsTranslations = {
 
 const defaultTheme: CommentsTheme = {
   locale: pl,
-  fontSerif: 'font-serif',
-  colors: {
-    text: '#1a1a1a',
-    background: '#FDFBF7',
-    primary: '#7c3aed',
-    muted: '#A6A6A6',
-  },
+  maxDepth: 5,
 };
 
 const CommentsContext = createContext<CommentsContextType | null>(null);
@@ -56,6 +50,7 @@ export const CommentsProvider: React.FC<{
   children: React.ReactNode;
   adapter: CommentAdapter;
   slideId: string;
+  sortBy?: 'newest' | 'top';
   userProfile?: UserProfile | null;
   translations?: Partial<CommentsTranslations>;
   theme?: Partial<CommentsTheme>;
@@ -66,23 +61,29 @@ export const CommentsProvider: React.FC<{
   children,
   adapter,
   slideId,
+  sortBy = 'top',
   userProfile = null,
   translations = {},
   theme = {},
-  onAuthRequired,
-  onAvatarClick,
-  addToast,
+  onAuthRequired: propsOnAuthRequired,
+  onAvatarClick: propsOnAvatarClick,
+  addToast: propsAddToast,
 }) => {
   const mergedTranslations = useMemo<CommentsTranslations>(() => ({ ...defaultTranslations, ...translations }), [translations]);
   const mergedTheme = useMemo<CommentsTheme>(() => ({
     ...defaultTheme,
     ...theme,
-    colors: { ...defaultTheme.colors, ...theme.colors },
     classes: { ...defaultTheme.classes, ...theme.classes },
   }), [theme]);
 
+  const onAuthRequired = useCallback(() => propsOnAuthRequired?.(), [propsOnAuthRequired]);
+  const onAvatarClick = useCallback((userId: string) => propsOnAvatarClick?.(userId), [propsOnAvatarClick]);
+  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'locked') => propsAddToast?.(message, type), [propsAddToast]);
+
+  const commentsManager = useCommentsManager(adapter, slideId, sortBy);
+
   const value: CommentsContextType = {
-    adapter,
+    ...commentsManager,
     slideId,
     userProfile,
     translations: mergedTranslations,

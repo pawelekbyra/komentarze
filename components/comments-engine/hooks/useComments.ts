@@ -1,7 +1,7 @@
 import { useCommentsContext } from '../context/CommentsContext';
 
 export const useComments = () => {
-  const { adapter, slideId, userProfile, onAuthRequired, addToast } = useCommentsContext();
+  const { slideId, userProfile, onAuthRequired, addToast } = useCommentsContext();
 
   const checkAuth = () => {
     if (!userProfile) {
@@ -16,7 +16,6 @@ export const useComments = () => {
   };
 
   return {
-    adapter,
     slideId,
     userProfile,
     checkAuth,
